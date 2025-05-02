@@ -28,7 +28,15 @@ def fetch_from_coingecko(endpoint: str, params: Optional[Dict[str, Any]] = None)
         else:
             response.raise_for_status()
     except requests.RequestException as e:
-        raise HTTPException(status_code=response.status_code if response else 500, detail=str(e))
+        raise HTTPException(status_code=response.status_code if hasattr(e, 'response') and e.response else 500, detail=str(e))
+
+@app.get("/")
+def home():
+    return {
+        "message": "✅ CoinGecko API Wrapper is running!",
+        "version": "2.0.0",
+        "documentation": "/docs"
+    }
 
 # Endpoint بهینه شده برای لیست کوین‌ها با جستجو
 @app.get("/coins/search")
@@ -293,19 +301,13 @@ def search_simple(
 
 # Run the server
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 0))
-    if port == 0:
-        import random
-        port = random.randint(8000, 9000)
+    port = int(os.getenv("PORT", 8080))
     
-    host = os.getenv("HOST", "0.0.0.0")
-    
-    print(f"🚀 Starting CoinGecko API Wrapper v2 on {host}:{port}")
-    print(f"📚 API Documentation: http://{host}:{port}/docs")
+    print(f"🚀 Starting CoinGecko API Wrapper v2 on 0.0.0.0:{port}")
+    print(f"📚 API Documentation: http://0.0.0.0:{port}/docs")
     
     uvicorn.run(
         "main:app", 
-        host=host, 
-        port=port, 
-        reload=True
+        host="0.0.0.0", 
+        port=port
     )
